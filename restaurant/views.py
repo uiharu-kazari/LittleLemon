@@ -27,72 +27,68 @@ class BookingViewSet(viewsets.ModelViewSet):
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
-    
+
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email', '')
-        
+        username = request.data.get("username")
+        password = request.data.get("password")
+        email = request.data.get("email", "")
+
         if not username or not password:
             return Response(
-                {'error': 'Username and password are required'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         if User.objects.filter(username=username).exists():
             return Response(
-                {'error': 'Username already exists'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         user = User.objects.create_user(
-            username=username,
-            password=password,
-            email=email
+            username=username, password=password, email=email
         )
         token, created = Token.objects.get_or_create(user=user)
         return Response(
             {
-                'message': 'User created successfully',
-                'token': token.key,
-                'username': user.username
+                "message": "User created successfully",
+                "token": token.key,
+                "username": user.username,
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
 class UserLoginView(generics.GenericAPIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
+        username = request.data.get("username")
+        password = request.data.get("password")
+
         if not username or not password:
             return Response(
-                {'error': 'Username and password are required'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         try:
             user = User.objects.get(username=username)
             if user.check_password(password):
                 token, created = Token.objects.get_or_create(user=user)
                 return Response(
                     {
-                        'message': 'Login successful',
-                        'token': token.key,
-                        'username': user.username
+                        "message": "Login successful",
+                        "token": token.key,
+                        "username": user.username,
                     },
-                    status=status.HTTP_200_OK
+                    status=status.HTTP_200_OK,
                 )
             else:
                 return Response(
-                    {'error': 'Invalid credentials'},
-                    status=status.HTTP_401_UNAUTHORIZED
+                    {"error": "Invalid credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
         except User.DoesNotExist:
             return Response(
-                {'error': 'Invalid credentials'},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
             )
